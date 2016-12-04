@@ -1,0 +1,31 @@
+{
+  "name": "estree-walk",
+  "description": "Simple and fast Estree walking.",
+  "version": "0.0.0",
+  "homepage": "https://github.com/jamen/estree-walk",
+  "author": "Jamen Marz (https://git.io/jamen)",
+  "repository": "jamen/estree-walk",
+  "bugs": {
+    "url": "https://github.com/jamen/estree-walk/issues"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=4"
+  },
+  "scripts": {
+    "test": "node test"
+  },
+  "keywords": [
+    "estree",
+    "esprima",
+    "walk",
+    "jamen"
+  ],
+  "dependencies": {
+    "free-context": "0.0.0"
+  },
+  "devDependencies": {
+    "esprima": "^3.1.2",
+    "tape": "^4.6.3"
+  }
+}
