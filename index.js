@@ -23,6 +23,7 @@ function walk (node, types, found) {
 }
 
 function step (node, pending) {
+  if (!node) return null
   switch (node.type) {
     case 'Program':
     case 'ClassBody':
@@ -42,13 +43,14 @@ function step (node, pending) {
     case 'UpdateExpression':
     case 'YieldExpression':
     case 'RestElement':
+    case 'SpreadElement':
     case 'ThrowStatement': return pending.push(node.argument)
-    case 'ClassDeclaration': return pending.push(node.id)
-    case 'CatchCaluse': return pending.push(node.param, node.body)
+    case 'ClassDeclaration': return pending.push(node.id, node.body)
+    case 'CatchClause': return pending.push(node.param, node.body)
     case 'DoWhileStatement':
     case 'WhileStatement': return pending.push(node.test, node.body)
     case 'ForOfStatement':
-    case 'ForIntStatement': return pending.push(node.left, node.right, node.body)
+    case 'ForInStatement': return pending.push(node.left, node.right, node.body)
     case 'VariableDeclaration': return pushMany(pending, node.declarations)
     case 'LogicalExpression':
     case 'AssignmentPattern':
@@ -57,7 +59,7 @@ function step (node, pending) {
     case 'MemberExpression': return pending.push(node.object, node.property)
     case 'ConditionalExpression': return pending.push(node.test, node.alternative, node.consequent)
     case 'SequenceExpression': return pushMany(pending, node.expressions)
-    case 'TaggedTemplateLiteral': return pending.push(node.tag, node.quasi)
+    case 'TaggedTemplateExpression': return pending.push(node.tag, node.quasi)
     case 'AssignmentProperty': return pending.push(node.value)
     case 'MethodDefinition': return pending.push(node.key, node.value)
     case 'MetaProperty': return pending.push(node.meta, node.property)
@@ -65,7 +67,7 @@ function step (node, pending) {
     case 'ImportNamespaceSpecifier':
     case 'ModuleSpecifier': return pending.push(node.local)
     case 'ImportSpecifier': return pending.push(node.local, node.imported)
-    case 'ExportSoecifier': return pending.push(node.local, node.exported)
+    case 'ExportSpecifier': return pending.push(node.local, node.exported)
     case 'ExportDefaultDeclaration': return pending.push(node.declaration)
     case 'ExportAllDeclaration': return pending.push(node.source)
     case 'ForStatement': {
@@ -96,10 +98,10 @@ function step (node, pending) {
       pushMany(pending, node.quasis)
       return pushMany(pending, node.expressions)
     }
-    case 'Function':
     case 'FunctionExpression':
     case 'ArrowFunctionExpression':
-    case 'FunctionDeclaration': {
+    case 'FunctionDeclaration':
+    case 'Function':{
       if (node.id) pending.push(node.id)
       pushMany(pending, node.params)
       return pending.push(node.body)
@@ -109,21 +111,22 @@ function step (node, pending) {
       pending.push(node.callee)
       return pushMany(pending, node.arguments)
     }
+    case 'ClassExpression':
     case 'Class': {
       if (node.id) pending.push(node.id)
       if (node.superClass) pending.push(node.superClass)
       return pending.push(node.body)
     }
+    case 'ImportDeclaration': {
+      pushMany(pending, node.specifiers)
+      return pending.push(node.source)
+    }
+    case 'ExportNamedDeclaration': {
+      if (node.declaration) pending.push(node.declaration)
+      var _end = pushMany(pending, node.specifiers)
+      if (node.source) return pending.push(node.source)
+      return _end
+    }
     default: return null
-  }
-  case 'ImportDeclaration': {
-    pushMany(pending, node.specifiers)
-    return pending.push(node.source)
-  }
-  case 'ExportNamedDeclaration': {
-    if (node.declaration) pending.push(node.declaration)
-    var _end = pushMany(pending, node.specifiers)
-    if (node.source) return pending.push(node.source)
-    return _end
   }
 }
