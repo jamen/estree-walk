@@ -15,6 +15,9 @@
   "scripts": {
     "test": "node test"
   },
+  "files": [
+    "index.js"
+  ],
   "keywords": [
     "estree",
     "esprima",

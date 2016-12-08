@@ -69,6 +69,7 @@ function step (node, pending) {
     case 'ImportSpecifier': return pending.push(node.local, node.imported)
     case 'ExportSpecifier': return pending.push(node.local, node.exported)
     case 'ExportDefaultDeclaration': return pending.push(node.declaration)
+    case 'VariableDeclarator': return pending.push(node.init)
     case 'ExportAllDeclaration': return pending.push(node.source)
     case 'ForStatement': {
       if (node.init) pending.push(node.init)
