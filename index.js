@@ -21,10 +21,8 @@ function walk (node, handler) {
 
 function step (node, pending) {
   if (!node) return null
-  if (!pending) {
-    pending = QUEUE_VOID
-    QUEUE_VOID.length = 0
-  }
+  if (!pending) pending = QUEUE_VOID
+  if (QUEUE_VOID.length) QUEUE_VOID.length = 0
   switch (node.type) {
     case 'Program':
     case 'ClassBody':
