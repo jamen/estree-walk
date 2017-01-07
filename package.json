@@ -1,6 +1,6 @@
 {
   "name": "estree-walk",
-  "description": "Simple and fast Estree walking.",
+  "description": "Walk ESTree nodes simple and fast",
   "version": "0.2.2",
   "homepage": "https://github.com/jamen/estree-walk",
   "author": "Jamen Marz (https://git.io/jamen)",

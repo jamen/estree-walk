@@ -4,23 +4,30 @@ var pushMany = free(Array.prototype.push, true)
 walk.step = step
 module.exports = walk
 
-function walk (node, types, found) {
-  if (!found) found = types, types = null
-  var pending = [node]
-  if (!types) {
-    while (pending.length) {
-      node = pending.shift()
-      found(node)
-      step(node, pending)
+var BREAK_TOKEN = {}
+
+function walk (node, handler) {
+  var all = typeof handler === 'function'
+  for (var pending = [node]; pending.length;) {
+    node = pending.shift()
+    var handle = all ? handler : handler[node.type]
+    if (handle && handle(node, BREAK_TOKEN) === BREAK_TOKEN) {
+      break
     }
-  } else {
-    while (pending.length) {
-      node = pending.shift()
-      if (types.indexOf(node.type) !== -1) found(node)
-      step(node, pending)
-    }
+    step(node, pending)
   }
 }
+
+// var esprima = require('esprima')
+// var source = esprima.parse(`
+// function foo (x, y) {
+//   y(function () {
+//     switch (x) {
+//       case 1: return 123
+//     }
+//   })
+// }
+// `)
 
 function step (node, pending) {
   if (!node) return null

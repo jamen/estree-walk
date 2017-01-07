@@ -1,6 +1,20 @@
 # estree-walk
 
-> Simple and fast Estree walking.
+> Walk ESTree nodes simple and fast
+
+```js
+walk(source, {
+  ReturnStatement: function (node, stop) {
+    // Return to continue loop
+    // Return `stop` to break loop
+  }.
+  // ...
+})
+
+walk(source, function (node, stop) {
+  // Walk all nodes in tree
+})
+```
 
 ## Installation
 
@@ -10,43 +24,47 @@ $ npm install --save estree-walk
 
 ## Usage
 
-### `walk(node, [types], found)`
+### `walk(node, handler)`
 
 Walk the given node and call the `found` function when any of the provided `types` are found.  If no types are provided, it calls for every node in the tree.
 
+ - `node` ([ESTree `Node`](https://github.com/estree/estree/blob/master/es5.md#node-objects)): A root `Node` to walk.
+ - `handler` (`Function`|`Object`): An object of node types of handle, or a function to handle all nodes.
+
+The `handler` is is called with `(node, stop)`.  If you return `stop` in the callback, the loop breaks instead of continuing, for fast exits.
+
 ```js
 walk(node, [
-  'ReturnStatement',
-  'SwitchCase',
-  'FunctionDeclaration'
-], function (node) {
-  // ...
+  FunctionDeclaration: function (node) { /* ... */ },
+  VariableDeclaration: function (node) { /* ... */ },
+  ImportDeclaration: function (node) { /* ... */ }
+])
+
+walk(node, function (node) {
+  if (node.type === 'AssignmentExpression') {
+    // ...
+  }
 })
 ```
 
-#### Parameters
-
- - `node` ([Estree `Node`](https://github.com/estree/estree/blob/master/es5.md#node-objects)): The node you want to walk.
- - `types` (`Array`): Types of nodes you are looking for.  If missing, assumes all nodes.
- - `found` (`Function`): Called with a node when it matches your types.
-
 ### `walk.step(node, pending)`
 
-Resolve the children of a node and push them to `pending`.  Useful for creating fast custom walkers.
+Alternative to callbacks, you can use `walk.step` to resolve the children of a node.
+
+ - `node` (ESTree `Node`): Node you are resolving children of
+ - `pending` (`Array`): Array the children are pushed on
+
+You can walk the tree pretty easily with a plain loop this way:
 
 ```js
-for (var pending = [node]; pending.length;) {
-  var sel = pending.shift()
-  // do stuff...
-  // then walk node:
+for (var pending = [source]; pending.length;) {
+  var node = pending.shift()
+  // continue or break loop normally
+  // handle `node` with a switch or whatever
+  // then walk node using this:
   walk.step(node, pending)
 }
 ```
-
-#### Parameters
-
- - `node` (Estree `Node`): The node of your current iteration.
- - `pending` (`Array`): An array where you want to push the children nodes.
 
 ## License
 
