@@ -18,7 +18,7 @@ for (var q = [source], node; node = q.pop(); walk.step(node, q)) {
 }
 ```
 
-A function that lets you traverse an [ESTree](https://github.com/estree) node. It is readable and fast for most, so you get the best of both worlds.  Alternatively, `walk.step` lets you walk without callbacks.  Not as readable, but benchmarks 3 times faster than `walk` for me.  Run `bench.js` for more info.
+A function walks an [ESTree](https://github.com/estree) node. It is readable and fast for most, so you get the best of both worlds.  Alternatively, `walk.step` lets you walk without callbacks.  Not as readable, but benchmarks 3 times faster than `walk` for me.  Run `bench.js` for more info.
 
 ## Installation
 
