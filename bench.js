@@ -59,7 +59,7 @@ bench.add('walk step + shift loop', function () {
 })
 
 
-bench.add('walk step + shift loop', function () {
+bench.add('walk step + pop loop', function () {
   for (var pending = [source]; pending.length && !string2;) {
     var node = pending.pop()
     if (node.type === 'Literal' && typeof node.value === 'string') {
