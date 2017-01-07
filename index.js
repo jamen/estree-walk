@@ -11,73 +11,91 @@ function walk (node, handler) {
   for (var pending = [node]; pending.length;) {
     node = pending.shift()
     var handle = all ? handler : handler[node.type]
-    if (handle && handle(node, BREAK_TOKEN) === BREAK_TOKEN) {
+    if (handle && (handle(node, BREAK_TOKEN) === BREAK_TOKEN)) {
       break
     }
     step(node, pending)
   }
 }
 
-// var esprima = require('esprima')
-// var source = esprima.parse(`
-// function foo (x, y) {
-//   y(function () {
-//     switch (x) {
-//       case 1: return 123
-//     }
-//   })
-// }
-// `)
-
 function step (node, pending) {
   if (!node) return null
   switch (node.type) {
     case 'Program':
     case 'ClassBody':
-    case 'BlockStatement': return pushMany(pending, node.body)
+    case 'BlockStatement':
+      return pushMany(pending, node.body)
     case 'ArrayPattern':
-    case 'ArrayExpression': return pushMany(pending, node.elements)
+    case 'ArrayExpression':
+      return pushMany(pending, node.elements)
     case 'ObjectPattern':
-    case 'ObjectExpression': return pushMany(pending, node.properties)
-    case 'ExpressionStatement': return pending.push(node.expression)
-    case 'WithStatement': return pending.push(node.object, node.body)
-    case 'ReturnStatement': return node.argument ? pending.push(node.argument) : null
-    case 'LabeledStatement': return pending.push(node.label, node.body)
+    case 'ObjectExpression':
+      return pushMany(pending, node.properties)
+    case 'ExpressionStatement':
+      return pending.push(node.expression)
+    case 'WithStatement':
+      return pending.push(node.object, node.body)
+    case 'ReturnStatement':
+      return node.argument ? pending.push(node.argument) : null
+    case 'LabeledStatement':
+      return pending.push(node.label, node.body)
     case 'BreakStatement':
-    case 'ContinueStatement': return node.label ? pending.push(node.label) : null
-    case 'IfStatement': return pending.push(node.test, node.consequent)
+    case 'ContinueStatement':
+      return node.label ? pending.push(node.label) : null
+    case 'IfStatement':
+      return pending.push(node.test, node.consequent)
     case 'UnaryExpression':
     case 'UpdateExpression':
     case 'YieldExpression':
     case 'RestElement':
     case 'SpreadElement':
-    case 'ThrowStatement': return pending.push(node.argument)
-    case 'ClassDeclaration': return pending.push(node.id, node.body)
-    case 'CatchClause': return pending.push(node.param, node.body)
+    case 'ThrowStatement':
+      return pending.push(node.argument)
+    case 'ClassDeclaration':
+      return pending.push(node.id, node.body)
+    case 'CatchClause':
+      return pending.push(node.param, node.body)
     case 'DoWhileStatement':
-    case 'WhileStatement': return pending.push(node.test, node.body)
+    case 'WhileStatement':
+      return pending.push(node.test, node.body)
     case 'ForOfStatement':
-    case 'ForInStatement': return pending.push(node.left, node.right, node.body)
-    case 'VariableDeclaration': return pushMany(pending, node.declarations)
+    case 'ForInStatement':
+      return pending.push(node.left, node.right, node.body)
+    case 'VariableDeclaration':
+      return pushMany(pending, node.declarations)
     case 'LogicalExpression':
     case 'AssignmentPattern':
     case 'AssignmentExpression':
-    case 'BinaryExpression': return pending.push(node.left, node.right)
-    case 'MemberExpression': return pending.push(node.object, node.property)
-    case 'ConditionalExpression': return pending.push(node.test, node.alternative, node.consequent)
-    case 'SequenceExpression': return pushMany(pending, node.expressions)
-    case 'TaggedTemplateExpression': return pending.push(node.tag, node.quasi)
-    case 'AssignmentProperty': return pending.push(node.value)
-    case 'MethodDefinition': return pending.push(node.key, node.value)
-    case 'MetaProperty': return pending.push(node.meta, node.property)
+    case 'BinaryExpression':
+      return pending.push(node.left, node.right)
+    case 'MemberExpression':
+      return pending.push(node.object, node.property)
+    case 'ConditionalExpression':
+      return pending.push(node.test, node.alternative, node.consequent)
+    case 'SequenceExpression':
+      return pushMany(pending, node.expressions)
+    case 'TaggedTemplateExpression':
+      return pending.push(node.tag, node.quasi)
+    case 'AssignmentProperty':
+      return pending.push(node.value)
+    case 'MethodDefinition':
+      return pending.push(node.key, node.value)
+    case 'MetaProperty':
+      return pending.push(node.meta, node.property)
     case 'ImportDefaultSpecifier':
     case 'ImportNamespaceSpecifier':
-    case 'ModuleSpecifier': return pending.push(node.local)
-    case 'ImportSpecifier': return pending.push(node.local, node.imported)
-    case 'ExportSpecifier': return pending.push(node.local, node.exported)
-    case 'ExportDefaultDeclaration': return pending.push(node.declaration)
-    case 'VariableDeclarator': return pending.push(node.init)
-    case 'ExportAllDeclaration': return pending.push(node.source)
+    case 'ModuleSpecifier':
+      return pending.push(node.local)
+    case 'ImportSpecifier':
+      return pending.push(node.local, node.imported)
+    case 'ExportSpecifier':
+      return pending.push(node.local, node.exported)
+    case 'ExportDefaultDeclaration':
+      return pending.push(node.declaration)
+    case 'VariableDeclarator':
+      return pending.push(node.init)
+    case 'ExportAllDeclaration':
+      return pending.push(node.source)
     case 'ForStatement': {
       if (node.init) pending.push(node.init)
       if (node.test) pending.push(node.test)
