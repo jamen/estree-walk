@@ -1,10 +1,11 @@
 var free = require('free-context')
 var pushMany = free(Array.prototype.push, true)
 
-walk.step = step
 module.exports = walk
 
+walk.step = step
 var BREAK_TOKEN = {}
+var QUEUE_VOID = []
 
 function walk (node, handler) {
   var all = typeof handler === 'function'
@@ -20,6 +21,10 @@ function walk (node, handler) {
 
 function step (node, pending) {
   if (!node) return null
+  if (!pending) {
+    pending = QUEUE_VOID
+    QUEUE_VOID.length = 0
+  }
   switch (node.type) {
     case 'Program':
     case 'ClassBody':
@@ -35,6 +40,12 @@ function step (node, pending) {
       return pending.push(node.expression)
     case 'WithStatement':
       return pending.push(node.object, node.body)
+    case 'UnaryExpression':
+    case 'UpdateExpression':
+    case 'YieldExpression':
+    case 'RestElement':
+    case 'SpreadElement':
+    case 'ThrowStatement':
     case 'ReturnStatement':
       return node.argument ? pending.push(node.argument) : null
     case 'LabeledStatement':
@@ -42,17 +53,11 @@ function step (node, pending) {
     case 'BreakStatement':
     case 'ContinueStatement':
       return node.label ? pending.push(node.label) : null
-    case 'IfStatement':
-      return pending.push(node.test, node.consequent)
-    case 'UnaryExpression':
-    case 'UpdateExpression':
-    case 'YieldExpression':
-    case 'RestElement':
-    case 'SpreadElement':
-    case 'ThrowStatement':
-      return pending.push(node.argument)
-    case 'ClassDeclaration':
-      return pending.push(node.id, node.body)
+    case 'IfStatement': {
+      var _end = pending.push(node.test, node.consequent)
+      if (node.alternate) return pending.push(node.alternate)
+      return _end
+    }
     case 'CatchClause':
       return pending.push(node.param, node.body)
     case 'DoWhileStatement':
@@ -93,7 +98,7 @@ function step (node, pending) {
     case 'ExportDefaultDeclaration':
       return pending.push(node.declaration)
     case 'VariableDeclarator':
-      return pending.push(node.init)
+      return node.init ? pending.push(node.id, node.init) : pending.push(node.id)
     case 'ExportAllDeclaration':
       return pending.push(node.source)
     case 'ForStatement': {
@@ -127,9 +132,9 @@ function step (node, pending) {
     case 'FunctionExpression':
     case 'ArrowFunctionExpression':
     case 'FunctionDeclaration':
-    case 'Function':{
+    case 'Function': {
       if (node.id) pending.push(node.id)
-      pushMany(pending, node.params)
+      if (node.params.length) pushMany(pending, node.params)
       return pending.push(node.body)
     }
     case 'NewExpression':
@@ -137,6 +142,7 @@ function step (node, pending) {
       pending.push(node.callee)
       return pushMany(pending, node.arguments)
     }
+    case 'ClassDeclaration':
     case 'ClassExpression':
     case 'Class': {
       if (node.id) pending.push(node.id)
@@ -148,8 +154,9 @@ function step (node, pending) {
       return pending.push(node.source)
     }
     case 'ExportNamedDeclaration': {
-      if (node.declaration) pending.push(node.declaration)
-      var _end = pushMany(pending, node.specifiers)
+      var _end
+      if (node.declaration) _end = pending.push(node.declaration)
+      if (node.specifiers.length) _end = pushMany(pending, node.specifiers)
       if (node.source) return pending.push(node.source)
       return _end
     }
