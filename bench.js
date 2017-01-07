@@ -32,21 +32,22 @@ function foo (x, done) {
 
 // Goal: find the string literals
 
-bench.add('walk regular', function () {
-  var string1, string2
-  walk(source, {
-    Literal: function (node, stop) {
-      if (string2) return stop
-      if (typeof node.value === 'string') {
-        if (string1) string2 = node
-        else string1 = node
-      }
+var string1, string2
+var handle = {
+  Literal: function (node, stop) {
+    if (string2) return stop
+    if (typeof node.value === 'string') {
+      if (string1) string2 = node
+      else string1 = node
     }
-  })
+  }
+}
+
+bench.add('walk regular', function () {
+  walk(source, handle)
 })
 
 bench.add('walk step + shift loop', function () {
-  var string1, string2
   for (var pending = [source]; pending.length && !string2;) {
     var node = pending.shift()
     if (node.type === 'Literal' && typeof node.value === 'string') {
@@ -59,7 +60,6 @@ bench.add('walk step + shift loop', function () {
 
 
 bench.add('walk step + shift loop', function () {
-  var string1, string2
   for (var pending = [source]; pending.length && !string2;) {
     var node = pending.pop()
     if (node.type === 'Literal' && typeof node.value === 'string') {
