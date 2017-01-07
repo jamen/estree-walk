@@ -7,7 +7,7 @@ walk(source, {
   ReturnStatement: function (node, stop) {
     // Return to continue loop
     // Return `stop` to break loop
-  }.
+  },
   // ...
 })
 
@@ -26,20 +26,28 @@ $ npm install --save estree-walk
 
 ### `walk(node, handler)`
 
-Walk the given node and call the `found` function when any of the provided `types` are found.  If no types are provided, it calls for every node in the tree.
+Walk the `node`'s children, calling `handler` for anything that matches.  It can be an object of node types with functions, or a single function to handle all types
 
- - `node` ([ESTree `Node`](https://github.com/estree/estree/blob/master/es5.md#node-objects)): A root `Node` to walk.
- - `handler` (`Function`|`Object`): An object of node types of handle, or a function to handle all nodes.
+ - `node` ([ESTree `Node`](https://github.com/estree/estree/blob/master/es5.md#node-objects)): The starting node to walk
+ - `handler` (`Function`|`Object`): Object of types -> functions, or a single function
 
-The `handler` is is called with `(node, stop)`.  If you return `stop` in the callback, the loop breaks instead of continuing, for fast exits.
+The `handler` is is called with `(node, stop)`.  If you return `stop` in the callback, the loop breaks instead of continuing, for fast exits
 
 ```js
 walk(node, [
+  // Example of `stop`:
+  ImportDeclaration: function (node, stop) {
+    if (isRelative(node.source.value)) {
+      return stop
+    }
+  },
+
+  // Other handlers:
   FunctionDeclaration: function (node) { /* ... */ },
-  VariableDeclaration: function (node) { /* ... */ },
-  ImportDeclaration: function (node) { /* ... */ }
+  VariableDeclaration: function (node) { /* ... */ }
 ])
 
+// Handle all nodes:
 walk(node, function (node) {
   if (node.type === 'AssignmentExpression') {
     // ...
@@ -49,12 +57,12 @@ walk(node, function (node) {
 
 ### `walk.step(node, pending)`
 
-Alternative to callbacks, you can use `walk.step` to resolve the children of a node.
+Instead of callbacks, you can use `step` to get the children of a node. Use this in a loop to walk a tree
 
  - `node` (ESTree `Node`): Node you are resolving children of
  - `pending` (`Array`): Array the children are pushed on
 
-You can walk the tree pretty easily with a plain loop this way:
+Example of walking a tree:
 
 ```js
 for (var pending = [source]; pending.length;) {
