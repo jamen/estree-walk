@@ -11,6 +11,7 @@ function walk (node, handler) {
   var all = typeof handler === 'function'
   for (var pending = [node]; pending.length;) {
     node = pending.shift()
+    if (!node) continue;
     var handle = all ? handler : handler[node.type]
     if (handle && (handle(node, BREAK_TOKEN) === BREAK_TOKEN)) {
       break
