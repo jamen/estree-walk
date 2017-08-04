@@ -3,14 +3,14 @@
 > Walk ESTree nodes simple and fast
 
 ```js
+// Walk tree with a visitor
 walk(source, {
   ReturnStatement: function (node, stop) {
-    // Return to continue loop
-    // Return `stop` to break loop
+    // You can call `stop` to exit the walking
   }
 })
 
-// A fast alternative:
+// Walk tree with a fast alrenative:
 for (var q = [source], node; node = q.pop(); walk.step(node, q)) {
   switch (node.type) {
     // ...
@@ -30,34 +30,29 @@ npm i estree-walk
 
 There is two methods of walking trees with this library:
 
- - Using a visitor pattern with `walk(node, visitor)`
- - Using a looping pattern with `walk.step(node, queue)`
+ 1. Using a visitor pattern with `walk(node, visitor)`
+ 2. Using a looping pattern with `walk.step(node, queue)`
 
 ### `walk(node, visitor)`
 
-Walks a node tree using a visitor.  A visitor can be:
-
- - Functions that execute for a specific node type.
- - Function that executes for all nodes.
-
-Visitor functions have the signature `(node, stop?)`, where `stop` is a function used for quickly exiting (that is, prevent visiting subsequent nodes)
+Walks a node tree using a visitor.  A visitor can be a function that executes for all nodes, or an object of functions that execute for a given node type.  Visitor functions have the signature `(node, stop?)`, where `stop` can be called to exit quickly.
 
 ```js
+// Visit by node type
 walk(node, {
-  // Example of visitor by node type
   FunctionDeclaration: function (node) {
     console.log(node.id)
   },
 
-  // Example of visitor using `stop`
   ImportDeclaration: function (node, stop) {
     if (isRelative(node.source.value)) {
+      // Exit walking quickly with stop
       stop()
     }
   }
 })
 
-// Example of visitor for all node types
+// Visit all nodes
 walk(node, function (node) {
   console.log(node.type, node.loc)
 })
@@ -65,9 +60,7 @@ walk(node, function (node) {
 
 ### `walk.step(node, queue)`
 
-An alternative to the visitor pattern is a loop pattern, which can provide a much faster way to walk trees, but at the price of extra maintence.
-
-The function simply scans `node` for possible children, and pushes them onto `queue`.  This can be used inside of a loop to walk the tree:
+An alternative to the visitor pattern is using a loop, which can provide a much faster way to walk trees, but at the price of extra maintence.  The `step` function simply scans `node` for possible child nodes, and pushes them onto `queue`.  This can be used with a loop to walk the tree:
 
 ```js
 // Start loop with a source node:
