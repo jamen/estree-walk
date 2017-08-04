@@ -3,7 +3,7 @@ var walk = require('../')
 var esprima = require('esprima').parse
 
 test('visitor pattern', function (t) {
-  t.plan(2)
+  t.plan(3)
 
   var node = esprima(`
     function foo () {
@@ -21,6 +21,15 @@ test('visitor pattern', function (t) {
       t.true(node, 'visited literal')
     }
   })
+
+  var visits = 0
+  walk(node, function (node, stop) {
+    visits++
+    if (visits === 3) {
+      stop()
+    }
+  })
+  t.is(visits, 3, 'exited early')
 })
 
 

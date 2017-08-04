@@ -5,7 +5,12 @@ walk.step = step
 function walk (node, visitor) {
   var all = typeof visitor === 'function'
 
-  for (var queue = [node]; queue.length;) {
+  var walking = true
+  function stop () {
+    walking = false
+  }
+
+  for (var queue = [node]; queue.length && walking;) {
     node = queue.shift()
 
     // Skip a missing node
@@ -13,7 +18,7 @@ function walk (node, visitor) {
 
     // Execute visitor
     var handle = all ? visitor : visitor[node.type]
-    if (handle) handle(node)
+    if (handle) handle(node, stop)
 
     // Continue walking
     step(node, queue)
