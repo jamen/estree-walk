@@ -2,43 +2,45 @@
 module.exports = walk
 walk.step = step
 
-var BREAK_TOKEN = {}
+function walk (node, visitor) {
+  var all = typeof visitor === 'function'
 
-function walk (node, handler) {
-  var all = typeof handler === 'function'
-  for (var pending = [node]; pending.length;) {
-    node = pending.shift()
-    if (!node) continue;
-    var handle = all ? handler : handler[node.type]
-    if (handle && (handle(node, BREAK_TOKEN) === BREAK_TOKEN)) {
-      break
-    }
-    step(node, pending)
+  for (var queue = [node]; queue.length;) {
+    node = queue.shift()
+
+    // Skip a missing node
+    if (!node) continue
+
+    // Execute visitor
+    var handle = all ? visitor : visitor[node.type]
+    if (handle) handle(node)
+
+    // Continue walking
+    step(node, queue)
   }
 }
 
-function step (node, pending) {
+function step (node, queue) {
+  var before = queue.length
+
   for (var key in node) {
     var child = node[key]
 
     if (child && child.type) {
-      pending.push(child)
-      return true
+      queue.push(child)
     }
     
     if (Array.isArray(child)) {
-      var stepped
-      
       for (var i = 0; i < child.length; i++) {
         var item = child[i]
         if (item && item.type) {
-          stepped = pending.push(item)
+          queue.push(item)
         }
       }
-
-      if (stepped) {
-        return true
-      }
     }
+  }
+
+  if (queue.length != before) {
+    return true
   }
 }

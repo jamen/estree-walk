@@ -18,65 +18,68 @@ for (var q = [source], node; node = q.pop(); walk.step(node, q)) {
 }
 ```
 
-A function walks an [ESTree](https://github.com/estree) node. It is readable and fast for most, so you get the best of both worlds.  Alternatively, `walk.step` lets you walk without callbacks.  Not as readable, but benchmarks 3 times faster than `walk` for me.  Run `bench.js` for more info.
+Functions for walking [ESTree](https://github.com/estree/estree) nodes.  Like others, it attempts to stay future-proof by enumerating the node's keys instead of handling the node's type, while also providing simple usage.
 
 ## Installation
 
 ```sh
-$ npm install --save estree-walk
+npm i estree-walk
 ```
 
 ## Usage
 
-### `walk(node, handler)`
+There is two methods of walking trees with this library:
 
-Walk the `node`'s children, calling `handler` for anything that matches.  It can be an object of node types with functions, or a single function to handle all types
+ - Using a visitor pattern with `walk(node, visitor)`
+ - Using a looping pattern with `walk.step(node, queue)`
 
- - `node` ([ESTree `Node`](https://github.com/estree/estree/blob/master/es5.md#node-objects)): The starting node to walk
- - `handler` (`Function`|`Object`): Object of types -> functions, or a single function
+### `walk(node, visitor)`
 
-The `handler` is is called with `(node, stop)`.  If you return `stop` in the callback, the loop breaks instead of continuing, for fast exits
+Walks a node tree using a visitor.  A visitor can be:
+
+ - Functions that execute for a specific node type.
+ - Function that executes for all nodes.
+
+Visitor functions have the signature `(node, stop?)`, where `stop` is a function used for quickly exiting (that is, prevent visiting subsequent nodes)
 
 ```js
-walk(node, [
-  // Example of `stop`:
-  ImportDeclaration: function (node, stop) {
-    if (isRelative(node.source.value)) {
-      return stop
-    }
+walk(node, {
+  // Example of visitor by node type
+  FunctionDeclaration: function (node) {
+    console.log(node.id)
   },
 
-  // Other handlers:
-  FunctionDeclaration: function (node) { /* ... */ },
-  VariableDeclaration: function (node) { /* ... */ }
-])
-
-// Handle all nodes:
-walk(node, function (node) {
-  if (node.type === 'AssignmentExpression') {
-    // ...
+  // Example of visitor using `stop`
+  ImportDeclaration: function (node, stop) {
+    if (isRelative(node.source.value)) {
+      stop()
+    }
   }
+})
+
+// Example of visitor for all node types
+walk(node, function (node) {
+  console.log(node.type, node.loc)
 })
 ```
 
-### `walk.step(node, [pending])`
+### `walk.step(node, queue)`
 
-Instead of callbacks, you can use `step` to get the children of a node. Use this in a loop to walk a tree
+An alternative to the visitor pattern is a loop pattern, which can provide a much faster way to walk trees, but at the price of extra maintence.
 
- - `node` (ESTree `Node`): Node you are resolving children of
- - `pending` (`Array`): Array the children are pushed on
-
-Example of walking a tree:
+The function simply scans `node` for possible children, and pushes them onto `queue`.  This can be used inside of a loop to walk the tree:
 
 ```js
-for (var pending = [source]; pending.length;) {
+// Start loop with a source node:
+for (var queue = [mainNode]; queue.length;) {
   var node = pending.shift()
-  // continue or break loop normally
   // handle `node` with a switch or whatever
-  // then walk node using this:
+  // then walk using step function:
   walk.step(node, pending)
 }
 ```
+
+This method is _much_ faster than a visitor pattern at the cost of less understandable code (as it is used internally to create the visitors).  The visitor pattern is likely fast enough for most cases where it is preferred over this.
 
 ## License
 
