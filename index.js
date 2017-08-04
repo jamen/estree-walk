@@ -4,8 +4,8 @@ walk.step = step
 
 function walk (node, visitor) {
   var all = typeof visitor === 'function'
-
   var walking = true
+
   function stop () {
     walking = false
   }
@@ -21,13 +21,14 @@ function walk (node, visitor) {
     if (handle) handle(node, stop)
 
     // Continue walking
-    step(node, queue)
+    if (walking) step(node, queue)
   }
 }
 
 function step (node, queue) {
   var before = queue.length
 
+  // Enumerate keys for possible children
   for (var key in node) {
     var child = node[key]
 
@@ -45,7 +46,6 @@ function step (node, queue) {
     }
   }
 
-  if (queue.length != before) {
-    return true
-  }
+  // Return whether any children were pushed
+  return queue.length !== before
 }

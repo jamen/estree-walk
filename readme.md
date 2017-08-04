@@ -65,10 +65,10 @@ An alternative to the visitor pattern is using a loop, which can provide a much 
 ```js
 // Start loop with a source node:
 for (var queue = [mainNode]; queue.length;) {
-  var node = pending.shift()
-  // handle `node` with a switch or whatever
-  // then walk using step function:
-  walk.step(node, pending)
+  var node = queue.pop()
+  // handle `node` with a switch statement or whatever
+  // then continue walking using step function:
+  walk.step(node, queue)
 }
 ```
 
