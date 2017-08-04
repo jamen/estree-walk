@@ -6,5 +6,5 @@ test('program', function (t) {
   t.plan(1)
 
   var program = esprima('function foo () { return 1 + 2 + 3 }')
-  t.is(step(program), 1, 'walks program')
+  t.true(step(program, []),  'walks program')
 })
