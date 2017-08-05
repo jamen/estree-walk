@@ -40,7 +40,29 @@ test('when node is null', function (t) {
     MemberExpression: function (node) {}
   }
 
-  t.doesNotThrow(function() {
+  t.doesNotThrow(function () {
     walk(undefined, handler)
-  }, 'should not throw error')
+  })
 })
+
+test('ignores parent', function (t) {
+  t.plan(1)
+  
+  var node = esprima('100 + 50')
+  var expr = node.body[0].expression
+
+  // Create some fake `parent` things
+  expr.parent = node
+  expr.left.parent = expr
+  expr.right.parent = expr
+
+  var walked = 0
+    
+  walk(node, function (node, stop) {
+    if (walked > 5) stop()
+    walked++
+  })
+
+  t.is(walked, 5, 'didn\'t loop forever')
+})
+

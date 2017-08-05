@@ -4,7 +4,7 @@ walk.step = step
 
 const blacklistedKeys = [
   'parent',
-];
+]
 
 function walk (node, visitor) {
   var all = typeof visitor === 'function'
@@ -34,7 +34,7 @@ function step (node, queue) {
 
   // Enumerate keys for possible children
   for (var key in node) {
-    if (blacklistedKeys.indexOf(key) >= 0) continue;
+    if (blacklistedKeys.indexOf(key) >= 0) continue
 
     var child = node[key]
 
