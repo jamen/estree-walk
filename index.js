@@ -2,6 +2,10 @@
 module.exports = walk
 walk.step = step
 
+const blacklistedKeys = [
+  'parent',
+];
+
 function walk (node, visitor) {
   var all = typeof visitor === 'function'
   var walking = true
@@ -30,12 +34,14 @@ function step (node, queue) {
 
   // Enumerate keys for possible children
   for (var key in node) {
+    if (blacklistedKeys.indexOf(key) >= 0) continue;
+
     var child = node[key]
 
     if (child && child.type) {
       queue.push(child)
     }
-    
+
     if (Array.isArray(child)) {
       for (var i = 0; i < child.length; i++) {
         var item = child[i]
